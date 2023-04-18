@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'org.liquibase.gradle' version '2.2.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    profile = project.findProperty('profile')
+    dbUrl = findProperty('healthportaldatabase.liquibase.db.url')
+    dbUser = findProperty('healthportaldatabase.liquibase.db.user')
+    dbPass = findProperty('healthportaldatabase.liquibase.db.password')
+    dbContext = findProperty('healthportaldatabase.liquibase.context', '')
+}
+
+dependencies {
+    liquibaseRuntime 'org.liquibase:liquibase-core:4.20.0'
+    liquibaseRuntime 'info.picocli:picocli:4.7.1'
+    liquibaseRuntime 'org.postgresql:postgresql:42.6.0'
+}
+
+liquibase {
+    activities {
+        main {
+            changelogFile 'src/main/resources/db/changelog.yaml'
+            url dbUrl
+            username dbUser
+            password dbPass
+            contexts dbContext
+            logLevel "warn"
+        }
+    }
+}
+
+String findProperty(String propertyName, String defaultValue) {
+    return findProperty(propertyName) ?: defaultValue;
+}
+
+String findProperty(String propertyName) {
+    if (profile) {
+        return project.findProperty("${profile}.${propertyName}");
+    }
+    return project.findProperty(propertyName);
+}
